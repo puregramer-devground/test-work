@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>test-work</title>
+</head>
+<body>
+    <div id="log"></div>
+    <script>
+
+        const log = document.getElementById("log");
+
+        const events = new EventSource('http://localhost:7777/events');
+        events.onmessage = (event) => {
+            log.innerHTML = event.data;
+        };
+    </script>
+</body>
+</html>
