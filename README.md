@@ -1,3 +1,9 @@
-# test-work
+# test
 
-puregramer@gmail.com
+[Board]
+
+ㄴ [List] {id, cardList}
+
+  ㄴ [Card] {}
+
+  ㄴ [Card]

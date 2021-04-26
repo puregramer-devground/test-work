@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "AMD",
+    "strict": true,
+    "sourceMap": true,
+    "watch": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "outFile": "./dist/index.js"
+  },
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": [
+    "assets",
+    "dist",
+    "vendor",
+    "node_modules",
+  ]
+}

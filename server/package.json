@@ -8,7 +8,7 @@
         "dev": "nodemon --exec node server"
     },
     "keywords": [],
-    "author": "",
+    "author": "puregramer@gmail.com",
     "license": "ISC",
     "dependencies": {
         "body-parser": "^1.19.0",

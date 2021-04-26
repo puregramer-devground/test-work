@@ -13,6 +13,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
 app.get('/events', eventsHandler);
+app.post('/add', addEvent);
 
 let count = 0;
 setInterval(() => {

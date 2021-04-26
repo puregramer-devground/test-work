@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>test-work</title>
+    <link href="./assets/style/style.css" rel="stylesheet">
 </head>
 <body>
-    <div id="log"></div>
-    <script>
+    <div id="workRoot"></div>
+<!--    <div id="log"></div>-->
+   <!-- <script>
 
         const log = document.getElementById("log");
 
@@ -14,6 +16,8 @@
         events.onmessage = (event) => {
             log.innerHTML = event.data;
         };
-    </script>
+    </script>-->
+    <script type="text/javascript" src="./vendor/ts-amd-loader.js"></script>
+    <script type="text/javascript" src="./dist/index.js"></script>
 </body>
 </html>
