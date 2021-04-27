@@ -12,7 +12,7 @@ export default class DOM {
     }
     static createElement(params: Params) {
         const element = document.createElement(`${params.tagName}`);
-        console.log(element);
+
         if (params.class) {
             element.setAttribute("class", params.class);
         }

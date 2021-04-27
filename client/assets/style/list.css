@@ -1,0 +1,40 @@
+
+.list-box {
+    width: 250px;
+    margin: 15px;
+    padding: 7px;
+    border-radius: 4px;
+    background-color: #ccc;
+}
+
+input {
+    width: 200px;
+    border: 0;
+    background-color: #ddd;
+    padding: 5px;
+
+}
+.add-card {
+    display: flex;
+    width: 200px;
+    height: 25px;
+    margin: 5px;
+    cursor: pointer;
+}
+.add-card i {
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+    background-image: url("../image/plus.svg");
+    background-repeat: no-repeat;
+    background-size: contain;
+}
+.add-card span {
+    line-height: 28px;
+    font-size: 14px;
+    color: #777;
+}
+.add-card:hover {
+    background-color: #bbb;
+
+}

@@ -1,12 +1,12 @@
+@import 'board.css';
+@import 'list.css';
+@import 'card.css';
+@import 'addItem.css';
 
 html, body {
     margin: 0;
     padding: 0;
 }
-#workRoot {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: #333;
-}
+
+
 
