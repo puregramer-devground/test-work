@@ -305,6 +305,7 @@ define("components/Board", ["require", "exports", "components/List", "utils/DOM"
                 class: "list-container"
             });
             this.init();
+            this.responseEvent();
             // dummy test
             // setTimeout(() => {
             //     this.update();
@@ -313,6 +314,35 @@ define("components/Board", ["require", "exports", "components/List", "utils/DOM"
         Board.prototype.init = function () {
             this.render();
             this.addList("", false, []);
+        };
+        Board.prototype.responseEvent = function () {
+            var events = new EventSource('http://localhost:7777/events');
+            events.onmessage = function (event) {
+                console.log("responseEvent: ", event.data);
+                // this.update();
+            };
+        };
+        Board.prototype.requestEvent = function (data) {
+            fetch("http://localhost:7777/add", {
+                method: 'POST',
+                mode: 'cors',
+                cache: 'no-cache',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // 'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                redirect: 'follow',
+                referrer: 'no-referrer',
+                body: JSON.stringify(data),
+            })
+                .then(function (response) {
+                console.log("response: ", response);
+                // response.json();
+            })
+                .catch(function (e) {
+                console.log("requestEvent error: ", e);
+            });
         };
         Board.prototype.render = function () {
             console.log("Board render");
@@ -365,20 +395,7 @@ define("components/Board", ["require", "exports", "components/List", "utils/DOM"
             store_1.setStore({
                 data: normalizedList
             });
-        };
-        Board.prototype.update = function () {
-            var _this = this;
-            this.list = [];
-            this.listContainer.innerHTML = "";
-            dummy.forEach(function (list) {
-                console.log("update: ", list);
-                _this.addList(list.title, !!list.title, list.cardList);
-                /*if (list.cardList) {
-                    for (let i = 0; i < list.cardList.length; i++) {
-    
-                    }
-                }*/
-            });
+            this.requestEvent(store_1.store);
         };
         return Board;
     }());

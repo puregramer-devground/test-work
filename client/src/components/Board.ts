@@ -1,6 +1,6 @@
 import List from "./List";
 import DOM from "../utils/DOM";
-import {setStore} from "../store";
+import {setStore, store} from "../store";
 import Card from "./Card";
 
 const dummy = [
@@ -58,6 +58,7 @@ export default class Board {
         });
 
         this.init();
+        this.responseEvent();
 
         // dummy test
         // setTimeout(() => {
@@ -68,6 +69,40 @@ export default class Board {
     init() {
         this.render();
         this.addList("", false, []);
+    }
+
+    responseEvent() {
+        const events = new EventSource('http://localhost:7777/events');
+        events.onmessage = (event) => {
+            console.log("responseEvent: ", event.data);
+
+
+            // this.update();
+        };
+    }
+
+    requestEvent(data: {}) {
+        fetch("http://localhost:7777/add", {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                // 'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            redirect: 'follow',
+            referrer: 'no-referrer',
+            body: JSON.stringify(data),
+        })
+            .then(response => {
+                console.log("response: ", response);
+                // response.json();
+            })
+            .catch(e => {
+                console.log("requestEvent error: ", e);
+            })
+
     }
 
     render() {
@@ -126,24 +161,20 @@ export default class Board {
         setStore({
             data: normalizedList
         });
+
+        this.requestEvent(store);
     }
 
-    update() {
+    /*update(data) {
         this.list = [];
         this.listContainer.innerHTML = "";
 
-        dummy.forEach(list => {
+        data.forEach(list => {
             console.log("update: ", list);
             this.addList(list.title, !!list.title, list.cardList);
-
-            /*if (list.cardList) {
-                for (let i = 0; i < list.cardList.length; i++) {
-
-                }
-            }*/
         });
 
-    }
+    }*/
 
 
 }
