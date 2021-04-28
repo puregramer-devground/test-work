@@ -1,9 +1,12 @@
 import Card from "./Card";
 import DOM from "../utils/DOM";
 import AddItem from "./AddItem";
+import Board from "./Board";
+type UpdateCallBack = () => void;
 
 export default class List {
     target: HTMLElement;
+    parent: Board;
     title: string;
     cardList: Card[];
     listBox: HTMLElement;
@@ -12,11 +15,15 @@ export default class List {
     addListItemBox: AddItem;
     addCardButton: HTMLElement;
     isShowAddItem: Boolean;
-    constructor(target: HTMLElement, title: string) {
+    updateCallBack: UpdateCallBack;
+
+    constructor(parent: Board, target: HTMLElement, title: string, updateCallBack: UpdateCallBack) {
+        this.parent = parent;
         this.target = target;
         this.title = title;
         this.cardList = [];
         this.isShowAddItem = false;
+        this.updateCallBack = updateCallBack;
         this.listBox = DOM.createElement({
             tagName: "div",
             class: "list-box",
@@ -40,8 +47,7 @@ export default class List {
             this.update();
         }, () => {});
         this.addCardItemBox = new AddItem(this.listBox, "CARD", (text: string) => {
-            this.cardList.push(new Card(this.cardContainer, text));
-
+            this.pushCard(text);
         }, () => {
             this.isShowAddItem = false;
             this.visibleAddItem();
@@ -54,11 +60,18 @@ export default class List {
         if (this.title) this.render();
     }
 
+    pushCard(text: string) {
+        this.cardList.push(new Card(this.cardContainer, text));
+        this.parent.normalize();
+    }
+
     update() {
         this.clean();
         this.visibleAddItem();
         this.init();
+        this.updateCallBack();
     }
+
 
     clean() {
         this.addListItemBox.el.style.display = "none";

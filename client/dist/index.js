@@ -163,12 +163,14 @@ define("components/List", ["require", "exports", "components/Card", "utils/DOM",
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var List = /** @class */ (function () {
-        function List(target, title) {
+        function List(parent, target, title, updateCallBack) {
             var _this = this;
+            this.parent = parent;
             this.target = target;
             this.title = title;
             this.cardList = [];
             this.isShowAddItem = false;
+            this.updateCallBack = updateCallBack;
             this.listBox = DOM_3.default.createElement({
                 tagName: "div",
                 class: "list-box",
@@ -192,7 +194,7 @@ define("components/List", ["require", "exports", "components/Card", "utils/DOM",
                 _this.update();
             }, function () { });
             this.addCardItemBox = new AddItem_1.default(this.listBox, "CARD", function (text) {
-                _this.cardList.push(new Card_1.default(_this.cardContainer, text));
+                _this.pushCard(text);
             }, function () {
                 _this.isShowAddItem = false;
                 _this.visibleAddItem();
@@ -203,10 +205,15 @@ define("components/List", ["require", "exports", "components/Card", "utils/DOM",
             if (this.title)
                 this.render();
         };
+        List.prototype.pushCard = function (text) {
+            this.cardList.push(new Card_1.default(this.cardContainer, text));
+            this.parent.normalize();
+        };
         List.prototype.update = function () {
             this.clean();
             this.visibleAddItem();
             this.init();
+            this.updateCallBack();
         };
         List.prototype.clean = function () {
             this.addListItemBox.el.style.display = "none";
@@ -235,9 +242,59 @@ define("components/List", ["require", "exports", "components/Card", "utils/DOM",
     }());
     exports.default = List;
 });
-define("components/Board", ["require", "exports", "components/List", "utils/DOM"], function (require, exports, List_1, DOM_4) {
+define("store", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.setStore = exports.store = void 0;
+    exports.store = {};
+    function setStore(newStore) {
+        exports.store = newStore;
+        console.log("store: ", exports.store);
+    }
+    exports.setStore = setStore;
+});
+define("components/Board", ["require", "exports", "components/List", "utils/DOM", "store"], function (require, exports, List_1, DOM_4, store_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var dummy = [
+        {
+            "index": 0,
+            "title": "test-work1",
+            "cardList": [
+                {
+                    "index": 0,
+                    "text": "todo 11"
+                },
+                {
+                    "index": 1,
+                    "text": "asd22"
+                },
+                {
+                    "index": 2,
+                    "text": "asdasd"
+                }
+            ]
+        },
+        {
+            "index": 1,
+            "title": "work22",
+            "cardList": [
+                {
+                    "index": 0,
+                    "text": "111"
+                },
+                {
+                    "index": 1,
+                    "text": "dsfqw2"
+                }
+            ]
+        },
+        {
+            "index": 2,
+            "title": "",
+            "cardList": []
+        }
+    ];
     var Board = /** @class */ (function () {
         function Board(target, name) {
             this.target = target;
@@ -248,11 +305,14 @@ define("components/Board", ["require", "exports", "components/List", "utils/DOM"
                 class: "list-container"
             });
             this.init();
+            // dummy test
+            // setTimeout(() => {
+            //     this.update();
+            // }, 2000);
         }
         Board.prototype.init = function () {
             this.render();
-            this.addList("");
-            // this.addList("");
+            this.addList("", false, []);
         };
         Board.prototype.render = function () {
             console.log("Board render");
@@ -269,9 +329,56 @@ define("components/Board", ["require", "exports", "components/List", "utils/DOM"
             });
             board.appendChild(this.listContainer);
         };
-        Board.prototype.addList = function (title) {
-            this.list.push(new List_1.default(this.listContainer, title));
-            console.log(this.list);
+        Board.prototype.addList = function (title, isUpdate, cardList) {
+            var _this = this;
+            var listInstance = new List_1.default(this, this.listContainer, title, function () {
+                _this.addList("", false, []);
+            });
+            this.list.push(listInstance);
+            if (isUpdate)
+                listInstance.clean();
+            if (cardList.length > 0) {
+                cardList.forEach(function (card) {
+                    listInstance.pushCard(card.text);
+                });
+            }
+            this.normalize();
+        };
+        Board.prototype.getCardList = function (cardList) {
+            return cardList.map(function (card, index) {
+                return {
+                    index: index,
+                    text: card.text
+                };
+            });
+        };
+        Board.prototype.normalize = function () {
+            var _this = this;
+            var normalizedList = [];
+            this.list.forEach(function (list, index) {
+                normalizedList.push({
+                    index: index,
+                    title: list.title,
+                    cardList: _this.getCardList(list.cardList)
+                });
+            });
+            store_1.setStore({
+                data: normalizedList
+            });
+        };
+        Board.prototype.update = function () {
+            var _this = this;
+            this.list = [];
+            this.listContainer.innerHTML = "";
+            dummy.forEach(function (list) {
+                console.log("update: ", list);
+                _this.addList(list.title, !!list.title, list.cardList);
+                /*if (list.cardList) {
+                    for (let i = 0; i < list.cardList.length; i++) {
+    
+                    }
+                }*/
+            });
         };
         return Board;
     }());

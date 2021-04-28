@@ -1,9 +1,6 @@
-# test
+# test-work
 
-[Board]
-
-ㄴ [List] {id, cardList}
-
-  ㄴ [Card] {}
-
-  ㄴ [Card]
+    [Board] {name, list}
+      ㄴ [List] {index, title, cardList}
+        ㄴ [Card] {index, text}
+        ㄴ [Card] {index, text}

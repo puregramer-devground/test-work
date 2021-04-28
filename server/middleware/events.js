@@ -22,7 +22,7 @@ export function eventsHandler(request, response) {
     clients.push(newClient);
 
     request.on('close', () => {
-        console.log(`${clientId} Connection closed`);
+        console.log(`${clientId} Connection closed.`);
         setClients(clients.filter(client => client.id !== clientId));
     });
 }

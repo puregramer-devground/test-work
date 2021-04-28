@@ -10,7 +10,7 @@ function sendEventsToAll(newData) {
     return sendEventsToAll(item);
 }*/
 
-async function addEvent(request, respsonse) {
+export async function addEvent(request, respsonse) {
     const newData = request.body;
     datas.push(newData);
     respsonse.json(newData);
