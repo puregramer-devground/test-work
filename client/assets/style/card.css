@@ -8,9 +8,22 @@
     margin: 5px 0;
     background-color: #fff;
     box-shadow: 0 1px 0 #999;
+    cursor: move;
 }
 
 .card-item:hover {
     background-color: #ddd;
-    cursor: pointer;
+
 }
+
+.card-item.over {
+    border: 3px dotted #666;
+}
+/*.card-item.over::after {
+    position: absolute;
+    display: flex;
+    content: "";
+    width: 200px;
+    height: 20px;
+    background-color: #333;
+}*/

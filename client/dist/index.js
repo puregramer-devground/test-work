@@ -71,7 +71,50 @@ define("components/Card", ["require", "exports", "utils/DOM"], function (require
                 text: text,
                 parent: this.target
             });
+            this.cardItem.draggable = true;
+            this.cardItem.addEventListener('dragstart', this.dragStartHandler.bind(this), false);
+            this.cardItem.addEventListener('drop', this.dropHandler.bind(this), false);
+            this.cardItem.addEventListener('dragend', this.dragEndHandler.bind(this), false);
+            this.cardItem.addEventListener('dragenter', this.dragEnterHandler.bind(this), false);
+            this.cardItem.addEventListener('dragleave', this.dragLeaveHandler.bind(this), false);
+            this.cardItem.addEventListener('dragover', this.dragOverHandler.bind(this), false);
         }
+        Card.prototype.dragStartHandler = function (e) {
+            console.log("dragstart", e.dataTransfer);
+            this.cardItem.style.opacity = '0.3';
+            if (!e.dataTransfer)
+                return;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.cardItem.innerHTML);
+        };
+        Card.prototype.dragEndHandler = function () {
+            this.cardItem.style.opacity = '1';
+            this.cardItem.classList.remove('over');
+        };
+        Card.prototype.dragEnterHandler = function () {
+            this.cardItem.classList.add('over');
+        };
+        Card.prototype.dragLeaveHandler = function () {
+            this.cardItem.classList.remove('over');
+        };
+        Card.prototype.dragOverHandler = function (e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            if (!e.dataTransfer)
+                return;
+            e.dataTransfer.dropEffect = "move";
+            return false;
+        };
+        Card.prototype.dropHandler = function (e) {
+            e.stopPropagation();
+            console.log("drop", e.dataTransfer);
+            if (!e.dataTransfer)
+                return;
+            e.dataTransfer.dropEffect = "move";
+            this.cardItem.innerHTML = e.dataTransfer.getData('text/html');
+            return false;
+        };
         return Card;
     }());
     exports.default = Card;
