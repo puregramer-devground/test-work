@@ -194,7 +194,7 @@ define("components/List", ["require", "exports", "components/Card", "utils/DOM",
                 _this.update();
             }, function () { });
             this.addCardItemBox = new AddItem_1.default(this.listBox, "CARD", function (text) {
-                _this.pushCard(text);
+                _this.pushCard(text, true);
             }, function () {
                 _this.isShowAddItem = false;
                 _this.visibleAddItem();
@@ -205,9 +205,9 @@ define("components/List", ["require", "exports", "components/Card", "utils/DOM",
             if (this.title)
                 this.render();
         };
-        List.prototype.pushCard = function (text) {
+        List.prototype.pushCard = function (text, isRequest) {
             this.cardList.push(new Card_1.default(this.cardContainer, text));
-            this.parent.normalize();
+            this.parent.normalize(isRequest);
         };
         List.prototype.update = function () {
             this.clean();
@@ -256,45 +256,6 @@ define("store", ["require", "exports"], function (require, exports) {
 define("components/Board", ["require", "exports", "components/List", "utils/DOM", "store"], function (require, exports, List_1, DOM_4, store_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var dummy = [
-        {
-            "index": 0,
-            "title": "test-work1",
-            "cardList": [
-                {
-                    "index": 0,
-                    "text": "todo 11"
-                },
-                {
-                    "index": 1,
-                    "text": "asd22"
-                },
-                {
-                    "index": 2,
-                    "text": "asdasd"
-                }
-            ]
-        },
-        {
-            "index": 1,
-            "title": "work22",
-            "cardList": [
-                {
-                    "index": 0,
-                    "text": "111"
-                },
-                {
-                    "index": 1,
-                    "text": "dsfqw2"
-                }
-            ]
-        },
-        {
-            "index": 2,
-            "title": "",
-            "cardList": []
-        }
-    ];
     var Board = /** @class */ (function () {
         function Board(target, name) {
             this.target = target;
@@ -306,20 +267,18 @@ define("components/Board", ["require", "exports", "components/List", "utils/DOM"
             });
             this.init();
             this.responseEvent();
-            // dummy test
-            // setTimeout(() => {
-            //     this.update();
-            // }, 2000);
         }
         Board.prototype.init = function () {
             this.render();
-            this.addList("", false, []);
+            this.addList("", false, [], true);
         };
         Board.prototype.responseEvent = function () {
+            var _this = this;
             var events = new EventSource('http://localhost:7777/events');
             events.onmessage = function (event) {
-                console.log("responseEvent: ", event.data);
-                // this.update();
+                // console.log("responseEvent: ", event.data);
+                var response = JSON.parse(event.data);
+                _this.update(response.length ? response[0].data : response.data);
             };
         };
         Board.prototype.requestEvent = function (data) {
@@ -330,7 +289,6 @@ define("components/Board", ["require", "exports", "components/List", "utils/DOM"
                 credentials: 'same-origin',
                 headers: {
                     'Content-Type': 'application/json',
-                    // 'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 redirect: 'follow',
                 referrer: 'no-referrer',
@@ -359,20 +317,20 @@ define("components/Board", ["require", "exports", "components/List", "utils/DOM"
             });
             board.appendChild(this.listContainer);
         };
-        Board.prototype.addList = function (title, isUpdate, cardList) {
+        Board.prototype.addList = function (title, isUpdate, cardList, isRequest) {
             var _this = this;
             var listInstance = new List_1.default(this, this.listContainer, title, function () {
-                _this.addList("", false, []);
+                _this.addList("", false, [], true);
             });
             this.list.push(listInstance);
             if (isUpdate)
                 listInstance.clean();
             if (cardList.length > 0) {
                 cardList.forEach(function (card) {
-                    listInstance.pushCard(card.text);
+                    listInstance.pushCard(card.text, isRequest);
                 });
             }
-            this.normalize();
+            this.normalize(isRequest);
         };
         Board.prototype.getCardList = function (cardList) {
             return cardList.map(function (card, index) {
@@ -382,7 +340,7 @@ define("components/Board", ["require", "exports", "components/List", "utils/DOM"
                 };
             });
         };
-        Board.prototype.normalize = function () {
+        Board.prototype.normalize = function (isRequest) {
             var _this = this;
             var normalizedList = [];
             this.list.forEach(function (list, index) {
@@ -395,7 +353,17 @@ define("components/Board", ["require", "exports", "components/List", "utils/DOM"
             store_1.setStore({
                 data: normalizedList
             });
-            this.requestEvent(store_1.store);
+            if (isRequest)
+                this.requestEvent(store_1.store);
+        };
+        Board.prototype.update = function (data) {
+            var _this = this;
+            this.list = [];
+            this.listContainer.innerHTML = "";
+            data.forEach(function (list) {
+                console.log("update: ", list);
+                _this.addList(list.title, !!list.title, list.cardList, false);
+            });
         };
         return Board;
     }());

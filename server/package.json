@@ -5,7 +5,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "dev": "nodemon --exec node server"
+        "start": "nodemon --exec node server"
     },
     "keywords": [],
     "author": "puregramer@gmail.com",

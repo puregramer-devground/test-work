@@ -3,46 +3,6 @@ import DOM from "../utils/DOM";
 import {setStore, store} from "../store";
 import Card from "./Card";
 
-const dummy = [
-    {
-        "index": 0,
-        "title": "test-work1",
-        "cardList": [
-            {
-                "index": 0,
-                "text": "todo 11"
-            },
-            {
-                "index": 1,
-                "text": "asd22"
-            },
-            {
-                "index": 2,
-                "text": "asdasd"
-            }
-        ]
-    },
-    {
-        "index": 1,
-        "title": "work22",
-        "cardList": [
-            {
-                "index": 0,
-                "text": "111"
-            },
-            {
-                "index": 1,
-                "text": "dsfqw2"
-            }
-        ]
-    },
-    {
-        "index": 2,
-        "title": "",
-        "cardList": []
-    }
-];
-
 export default class Board {
     target: HTMLElement;
     name: string;
@@ -59,25 +19,19 @@ export default class Board {
 
         this.init();
         this.responseEvent();
-
-        // dummy test
-        // setTimeout(() => {
-        //     this.update();
-        // }, 2000);
     }
 
     init() {
         this.render();
-        this.addList("", false, []);
+        this.addList("", false, [], true);
     }
 
     responseEvent() {
         const events = new EventSource('http://localhost:7777/events');
         events.onmessage = (event) => {
-            console.log("responseEvent: ", event.data);
-
-
-            // this.update();
+            // console.log("responseEvent: ", event.data);
+            const response = JSON.parse(event.data);
+            this.update(response.length ? response[0].data : response.data);
         };
     }
 
@@ -89,7 +43,6 @@ export default class Board {
             credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
-                // 'Content-Type': 'application/x-www-form-urlencoded',
             },
             redirect: 'follow',
             referrer: 'no-referrer',
@@ -122,20 +75,20 @@ export default class Board {
 
     }
 
-    addList(title: string, isUpdate: boolean, cardList: {text:string}[]) {
+    addList(title: string, isUpdate: boolean, cardList: {text:string}[], isRequest: boolean) {
         const listInstance = new List(this, this.listContainer, title, () => {
-            this.addList("", false, []);
+            this.addList("", false, [], true);
         });
         this.list.push(listInstance);
         if (isUpdate) listInstance.clean();
 
         if (cardList.length > 0) {
             cardList.forEach(card => {
-                listInstance.pushCard(card.text);
+                listInstance.pushCard(card.text, isRequest);
             });
         }
 
-        this.normalize();
+        this.normalize(isRequest);
     }
 
     getCardList(cardList: Card[]) {
@@ -147,7 +100,7 @@ export default class Board {
         });
     }
 
-    normalize() {
+    normalize(isRequest: boolean) {
         const normalizedList: object[] = [];
         this.list.forEach((list: List, index: number) => {
             normalizedList.push({
@@ -162,19 +115,19 @@ export default class Board {
             data: normalizedList
         });
 
-        this.requestEvent(store);
+        if (isRequest) this.requestEvent(store);
     }
 
-    /*update(data) {
+    update(data: {title:string, cardList:[]}[]) {
         this.list = [];
         this.listContainer.innerHTML = "";
 
         data.forEach(list => {
             console.log("update: ", list);
-            this.addList(list.title, !!list.title, list.cardList);
+            this.addList(list.title, !!list.title, list.cardList, false);
         });
 
-    }*/
+    }
 
 
 }

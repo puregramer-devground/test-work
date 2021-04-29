@@ -47,7 +47,7 @@ export default class List {
             this.update();
         }, () => {});
         this.addCardItemBox = new AddItem(this.listBox, "CARD", (text: string) => {
-            this.pushCard(text);
+            this.pushCard(text, true);
         }, () => {
             this.isShowAddItem = false;
             this.visibleAddItem();
@@ -60,9 +60,9 @@ export default class List {
         if (this.title) this.render();
     }
 
-    pushCard(text: string) {
+    pushCard(text: string, isRequest: boolean) {
         this.cardList.push(new Card(this.cardContainer, text));
-        this.parent.normalize();
+        this.parent.normalize(isRequest);
     }
 
     update() {
