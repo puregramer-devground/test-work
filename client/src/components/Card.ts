@@ -1,12 +1,16 @@
 import DOM from "../utils/DOM";
+import {requestEvent, store, updateStoreMap} from "../store";
+import {getRandomInt} from "../utils/index";
 
 export default class Card {
     target: HTMLElement;
     text: string;
     cardItem: HTMLElement;
+    id: number;
     constructor(target: HTMLElement, text: string) {
         this.target = target;
         this.text = text;
+        this.id = Date.now() + getRandomInt(0, 10000);
         this.cardItem = DOM.createElement({
             tagName: "div",
             class: "card-item",
@@ -25,24 +29,29 @@ export default class Card {
     }
 
     dragStartHandler(e: DragEvent) {
-        console.log("dragstart", e.dataTransfer);
+        console.log("dragstart");
         this.cardItem.style.opacity = '0.3';
 
         if (!e.dataTransfer) return;
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/html', this.cardItem.innerHTML);
+        e.dataTransfer.setData('cardItem', JSON.stringify({
+            id: this.id,
+            text: this.text
+        }));
     }
 
     dragEndHandler() {
+        console.log("dragend");
         this.cardItem.style.opacity = '1';
         this.cardItem.classList.remove('over');
     }
 
     dragEnterHandler() {
+        console.log("dragenter");
         this.cardItem.classList.add('over');
     }
 
     dragLeaveHandler() {
+        console.log("dragleave");
         this.cardItem.classList.remove('over');
     }
 
@@ -50,18 +59,21 @@ export default class Card {
         if (e.preventDefault) {
             e.preventDefault();
         }
-        if (!e.dataTransfer) return ;
-        e.dataTransfer.dropEffect = "move";
+        console.log("dragover");
         return false;
     }
 
     dropHandler(e: DragEvent) {
         e.stopPropagation();
-        console.log("drop", e.dataTransfer);
         if (!e.dataTransfer) return;
-        e.dataTransfer.dropEffect = "move";
-        this.cardItem.innerHTML = e.dataTransfer.getData('text/html');
+        const moveCardItem = e.dataTransfer.getData('cardItem');
+        console.log("drop--", moveCardItem);
+        updateStoreMap(moveCardItem, "del", this.id, 0);
+        updateStoreMap(moveCardItem, "add", this.id, 0);
         return false;
     }
+
+
+
 
 }

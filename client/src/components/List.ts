@@ -2,12 +2,15 @@ import Card from "./Card";
 import DOM from "../utils/DOM";
 import AddItem from "./AddItem";
 import Board from "./Board";
+import {updateStoreMap} from "../store";
+import {getRandomInt} from "../utils/index";
 type UpdateCallBack = () => void;
 
 export default class List {
     target: HTMLElement;
     parent: Board;
     title: string;
+    id: number;
     cardList: Card[];
     listBox: HTMLElement;
     cardContainer: HTMLElement;
@@ -21,6 +24,7 @@ export default class List {
         this.parent = parent;
         this.target = target;
         this.title = title;
+        this.id = Date.now() + getRandomInt(0, 1000);
         this.cardList = [];
         this.isShowAddItem = false;
         this.updateCallBack = updateCallBack;
@@ -29,6 +33,14 @@ export default class List {
             class: "list-box",
             parent: this.target
         });
+
+        this.listBox.draggable = true;
+        this.listBox.addEventListener('drop', this.dropHandler.bind(this), false);
+        this.listBox.addEventListener('dragend', this.dragEndHandler.bind(this), false);
+        this.listBox.addEventListener('dragenter', this.dragEnterHandler.bind(this), false);
+        this.listBox.addEventListener('dragleave', this.dragLeaveHandler.bind(this), false);
+        this.listBox.addEventListener('dragover', this.dragOverHandler.bind(this), false);
+
         this.cardContainer = DOM.createElement({
             tagName: "div",
             class: "card-container"
@@ -54,10 +66,13 @@ export default class List {
         });
 
         this.init();
+
     }
 
     init() {
-        if (this.title) this.render();
+        if (this.title) {
+            this.render();
+        }
     }
 
     pushCard(text: string, isRequest: boolean) {
@@ -72,7 +87,6 @@ export default class List {
         this.updateCallBack();
     }
 
-
     clean() {
         this.addListItemBox.el.style.display = "none";
     }
@@ -85,6 +99,39 @@ export default class List {
             this.addCardButton.style.display = "flex";
             this.addCardItemBox.el.style.display = "none";
         }
+    }
+
+    dragOverHandler(e: DragEvent) {
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+        console.log("dragover");
+        return false;
+    }
+
+    dropHandler(e: DragEvent) {
+        e.stopPropagation();
+        if (!e.dataTransfer) return;
+        const moveCardItem = e.dataTransfer.getData('cardItem');
+        console.log("list drop--", moveCardItem);
+        updateStoreMap(moveCardItem, "del", 0, this.id);
+        updateStoreMap(moveCardItem, "add", 0, this.id);
+        return false;
+    }
+
+    dragEndHandler() {
+        console.log("list dragend");
+        this.listBox.classList.remove('over');
+    }
+
+    dragEnterHandler() {
+        console.log("list dragenter");
+        this.listBox.classList.add('over');
+    }
+
+    dragLeaveHandler() {
+        console.log("list dragleave");
+        this.listBox.classList.remove('over');
     }
 
     render() {

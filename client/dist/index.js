@@ -22,49 +22,89 @@ define("utils/DOM", ["require", "exports"], function (require, exports) {
     }());
     exports.default = DOM;
 });
-/*
-export default class DOM {
-    constructor() {
-        throw new Error("DOM은 static class 입니다.");
+define("store", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.updateStoreMap = exports.requestEvent = exports.setStore = exports.store = void 0;
+    function setStore(newStore) {
+        exports.store = newStore;
+        console.log("setStore: ", exports.store);
     }
-
-    static createElement(tagName, {attrs, text, callback, parent}) {
-        const element = document.createElement(`${tagName}`);
-
-        if (attrs) {
-            DOM.insertAttributes(element, attrs);
-        }
-
-        if (callback) {
-            callback(element);
-        }
-
-        if (text) {
-            element.innerHTML = text;
-        }
-
-        if (parent instanceof HTMLElement) {
-            parent.appendChild(element);
-        }
-
-        return element;
+    exports.setStore = setStore;
+    function requestEvent(data) {
+        fetch("http://localhost:7777/add", {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            redirect: 'follow',
+            referrer: 'no-referrer',
+            body: JSON.stringify(data),
+        })
+            .then(function (response) {
+            console.log("response: ", response);
+            // response.json();
+        })
+            .catch(function (e) {
+            console.log("requestEvent error: ", e);
+        });
     }
-
-    static insertAttributes(element, attrs) {
-        if (element instanceof HTMLElement) {
-            Object.keys(attrs).forEach((prop) => {
-                element.setAttribute(prop, attrs[prop]);
-            });
-        }
+    exports.requestEvent = requestEvent;
+    function updateStoreMap(cardItem, mode, endId, listId) {
+        console.log("getUpdateStoreMap ", exports.store.data, cardItem, mode, endId, listId);
+        var cardItemObj = JSON.parse(cardItem);
+        exports.store.data.forEach(function (list, index) {
+            if (list.cardList) {
+                for (var i = 0; i < list.cardList.length; i++) {
+                    if (mode === "del" && cardItemObj.id !== endId) {
+                        if (list.cardList[i].id === cardItemObj.id) {
+                            list.cardList.splice(i, 1);
+                            // console.log("del -", list.cardList);
+                            break;
+                        }
+                    }
+                    if (mode === "add" && cardItemObj.id !== endId) {
+                        if (list.cardList[i].id === endId) {
+                            list.cardList.splice(i + 1, 0, cardItemObj);
+                            // console.log("add -", list.cardList);
+                            break;
+                        }
+                    }
+                }
+                if (mode === "add" && listId !== 0) {
+                    if (list.id === listId) {
+                        list.cardList.push(cardItemObj);
+                    }
+                }
+            }
+        });
+        if (mode === "add")
+            requestEvent(exports.store);
     }
-}*/
-define("components/Card", ["require", "exports", "utils/DOM"], function (require, exports, DOM_1) {
+    exports.updateStoreMap = updateStoreMap;
+});
+define("utils/index", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.getRandomInt = void 0;
+    function getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+    exports.getRandomInt = getRandomInt;
+});
+define("components/Card", ["require", "exports", "utils/DOM", "store", "utils/index"], function (require, exports, DOM_1, store_1, index_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Card = /** @class */ (function () {
         function Card(target, text) {
             this.target = target;
             this.text = text;
+            this.id = Date.now() + index_1.getRandomInt(0, 10000);
             this.cardItem = DOM_1.default.createElement({
                 tagName: "div",
                 class: "card-item",
@@ -80,39 +120,43 @@ define("components/Card", ["require", "exports", "utils/DOM"], function (require
             this.cardItem.addEventListener('dragover', this.dragOverHandler.bind(this), false);
         }
         Card.prototype.dragStartHandler = function (e) {
-            console.log("dragstart", e.dataTransfer);
+            console.log("dragstart");
             this.cardItem.style.opacity = '0.3';
             if (!e.dataTransfer)
                 return;
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/html', this.cardItem.innerHTML);
+            e.dataTransfer.setData('cardItem', JSON.stringify({
+                id: this.id,
+                text: this.text
+            }));
         };
         Card.prototype.dragEndHandler = function () {
+            console.log("dragend");
             this.cardItem.style.opacity = '1';
             this.cardItem.classList.remove('over');
         };
         Card.prototype.dragEnterHandler = function () {
+            console.log("dragenter");
             this.cardItem.classList.add('over');
         };
         Card.prototype.dragLeaveHandler = function () {
+            console.log("dragleave");
             this.cardItem.classList.remove('over');
         };
         Card.prototype.dragOverHandler = function (e) {
             if (e.preventDefault) {
                 e.preventDefault();
             }
-            if (!e.dataTransfer)
-                return;
-            e.dataTransfer.dropEffect = "move";
+            console.log("dragover");
             return false;
         };
         Card.prototype.dropHandler = function (e) {
             e.stopPropagation();
-            console.log("drop", e.dataTransfer);
             if (!e.dataTransfer)
                 return;
-            e.dataTransfer.dropEffect = "move";
-            this.cardItem.innerHTML = e.dataTransfer.getData('text/html');
+            var moveCardItem = e.dataTransfer.getData('cardItem');
+            console.log("drop--", moveCardItem);
+            store_1.updateStoreMap(moveCardItem, "del", this.id, 0);
+            store_1.updateStoreMap(moveCardItem, "add", this.id, 0);
             return false;
         };
         return Card;
@@ -202,7 +246,7 @@ define("components/AddItem", ["require", "exports", "utils/DOM"], function (requ
     }());
     exports.default = AddItem;
 });
-define("components/List", ["require", "exports", "components/Card", "utils/DOM", "components/AddItem"], function (require, exports, Card_1, DOM_3, AddItem_1) {
+define("components/List", ["require", "exports", "components/Card", "utils/DOM", "components/AddItem", "store", "utils/index"], function (require, exports, Card_1, DOM_3, AddItem_1, store_2, index_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var List = /** @class */ (function () {
@@ -211,6 +255,7 @@ define("components/List", ["require", "exports", "components/Card", "utils/DOM",
             this.parent = parent;
             this.target = target;
             this.title = title;
+            this.id = Date.now() + index_2.getRandomInt(0, 1000);
             this.cardList = [];
             this.isShowAddItem = false;
             this.updateCallBack = updateCallBack;
@@ -219,6 +264,12 @@ define("components/List", ["require", "exports", "components/Card", "utils/DOM",
                 class: "list-box",
                 parent: this.target
             });
+            this.listBox.draggable = true;
+            this.listBox.addEventListener('drop', this.dropHandler.bind(this), false);
+            this.listBox.addEventListener('dragend', this.dragEndHandler.bind(this), false);
+            this.listBox.addEventListener('dragenter', this.dragEnterHandler.bind(this), false);
+            this.listBox.addEventListener('dragleave', this.dragLeaveHandler.bind(this), false);
+            this.listBox.addEventListener('dragover', this.dragOverHandler.bind(this), false);
             this.cardContainer = DOM_3.default.createElement({
                 tagName: "div",
                 class: "card-container"
@@ -245,8 +296,9 @@ define("components/List", ["require", "exports", "components/Card", "utils/DOM",
             this.init();
         }
         List.prototype.init = function () {
-            if (this.title)
+            if (this.title) {
                 this.render();
+            }
         };
         List.prototype.pushCard = function (text, isRequest) {
             this.cardList.push(new Card_1.default(this.cardContainer, text));
@@ -271,6 +323,35 @@ define("components/List", ["require", "exports", "components/Card", "utils/DOM",
                 this.addCardItemBox.el.style.display = "none";
             }
         };
+        List.prototype.dragOverHandler = function (e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            console.log("dragover");
+            return false;
+        };
+        List.prototype.dropHandler = function (e) {
+            e.stopPropagation();
+            if (!e.dataTransfer)
+                return;
+            var moveCardItem = e.dataTransfer.getData('cardItem');
+            console.log("list drop--", moveCardItem);
+            store_2.updateStoreMap(moveCardItem, "del", 0, this.id);
+            store_2.updateStoreMap(moveCardItem, "add", 0, this.id);
+            return false;
+        };
+        List.prototype.dragEndHandler = function () {
+            console.log("list dragend");
+            this.listBox.classList.remove('over');
+        };
+        List.prototype.dragEnterHandler = function () {
+            console.log("list dragenter");
+            this.listBox.classList.add('over');
+        };
+        List.prototype.dragLeaveHandler = function () {
+            console.log("list dragleave");
+            this.listBox.classList.remove('over');
+        };
         List.prototype.render = function () {
             var listTitle = DOM_3.default.createElement({
                 tagName: "input",
@@ -285,18 +366,7 @@ define("components/List", ["require", "exports", "components/Card", "utils/DOM",
     }());
     exports.default = List;
 });
-define("store", ["require", "exports"], function (require, exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.setStore = exports.store = void 0;
-    exports.store = {};
-    function setStore(newStore) {
-        exports.store = newStore;
-        console.log("store: ", exports.store);
-    }
-    exports.setStore = setStore;
-});
-define("components/Board", ["require", "exports", "components/List", "utils/DOM", "store"], function (require, exports, List_1, DOM_4, store_1) {
+define("components/Board", ["require", "exports", "components/List", "utils/DOM", "store"], function (require, exports, List_1, DOM_4, store_3) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Board = /** @class */ (function () {
@@ -323,27 +393,6 @@ define("components/Board", ["require", "exports", "components/List", "utils/DOM"
                 var response = JSON.parse(event.data);
                 _this.update(response.length ? response[0].data : response.data);
             };
-        };
-        Board.prototype.requestEvent = function (data) {
-            fetch("http://localhost:7777/add", {
-                method: 'POST',
-                mode: 'cors',
-                cache: 'no-cache',
-                credentials: 'same-origin',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                redirect: 'follow',
-                referrer: 'no-referrer',
-                body: JSON.stringify(data),
-            })
-                .then(function (response) {
-                console.log("response: ", response);
-                // response.json();
-            })
-                .catch(function (e) {
-                console.log("requestEvent error: ", e);
-            });
         };
         Board.prototype.render = function () {
             console.log("Board render");
@@ -379,7 +428,8 @@ define("components/Board", ["require", "exports", "components/List", "utils/DOM"
             return cardList.map(function (card, index) {
                 return {
                     index: index,
-                    text: card.text
+                    text: card.text,
+                    id: card.id
                 };
             });
         };
@@ -389,15 +439,17 @@ define("components/Board", ["require", "exports", "components/List", "utils/DOM"
             this.list.forEach(function (list, index) {
                 normalizedList.push({
                     index: index,
+                    id: list.id,
                     title: list.title,
                     cardList: _this.getCardList(list.cardList)
                 });
             });
-            store_1.setStore({
+            console.log("normalizedList ", normalizedList);
+            store_3.setStore({
                 data: normalizedList
             });
             if (isRequest)
-                this.requestEvent(store_1.store);
+                store_3.requestEvent(store_3.store);
         };
         Board.prototype.update = function (data) {
             var _this = this;

@@ -6,7 +6,9 @@
     border-radius: 4px;
     background-color: #ccc;
 }
-
+.list-box.over {
+    border: 3px dotted #666;
+}
 input {
     width: 200px;
     border: 0;

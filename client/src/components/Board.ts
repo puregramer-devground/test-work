@@ -1,6 +1,6 @@
 import List from "./List";
 import DOM from "../utils/DOM";
-import {setStore, store} from "../store";
+import {CardList, NormalizedList, requestEvent, setStore, store} from "../store";
 import Card from "./Card";
 
 export default class Board {
@@ -33,29 +33,6 @@ export default class Board {
             const response = JSON.parse(event.data);
             this.update(response.length ? response[0].data : response.data);
         };
-    }
-
-    requestEvent(data: {}) {
-        fetch("http://localhost:7777/add", {
-            method: 'POST',
-            mode: 'cors',
-            cache: 'no-cache',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            redirect: 'follow',
-            referrer: 'no-referrer',
-            body: JSON.stringify(data),
-        })
-            .then(response => {
-                console.log("response: ", response);
-                // response.json();
-            })
-            .catch(e => {
-                console.log("requestEvent error: ", e);
-            })
-
     }
 
     render() {
@@ -95,30 +72,32 @@ export default class Board {
         return cardList.map((card: Card, index: number) => {
             return {
                 index,
-                text: card.text
+                text: card.text,
+                id: card.id
             };
         });
     }
 
     normalize(isRequest: boolean) {
-        const normalizedList: object[] = [];
+        const normalizedList: NormalizedList[] = [];
         this.list.forEach((list: List, index: number) => {
             normalizedList.push({
                 index,
+                id: list.id,
                 title: list.title,
                 cardList: this.getCardList(list.cardList)
             });
 
         });
-
+        console.log("normalizedList ", normalizedList);
         setStore({
             data: normalizedList
         });
 
-        if (isRequest) this.requestEvent(store);
+        if (isRequest) requestEvent(store);
     }
 
-    update(data: {title:string, cardList:[]}[]) {
+    update(data: {title:string, cardList:CardList[]}[]) {
         this.list = [];
         this.listContainer.innerHTML = "";
 
