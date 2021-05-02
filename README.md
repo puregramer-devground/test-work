@@ -7,13 +7,11 @@
         ㄴ [Card] {index, id, text}
 
 ### 실행
-- server 실행
-
-
-    npm start
-
-
+- server 실행 
+  ```
+  npm start
+  ```
 - client 실행
-  
-
-    client\index.html 파일 열기
+  ```
+  client\index.html 파일 열기
+  ```
