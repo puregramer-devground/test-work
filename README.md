@@ -1,6 +1,5 @@
 # test-work
 
----
 ### 컴포넌트 구조
     [Board] {name, list}
       ㄴ [List] {index, id, title, cardList}
@@ -9,10 +8,11 @@
 
 ### 실행
 - server 실행
-  
+
 
     npm start
-  
+
+
 - client 실행
   
 
