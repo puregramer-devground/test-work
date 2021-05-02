@@ -85,9 +85,5 @@ export default class AddItem {
            this.closeCallBack();
         });
 
-
     }
-
-
-
 }

@@ -54,7 +54,6 @@ define("store", ["require", "exports"], function (require, exports) {
     }
     exports.requestEvent = requestEvent;
     function updateStoreMap(cardItem, mode, endId, listId) {
-        console.log("getUpdateStoreMap ", exports.store.data, cardItem, mode, endId, listId);
         var cardItemObj = JSON.parse(cardItem);
         exports.store.data.forEach(function (list, index) {
             if (list.cardList) {
@@ -62,14 +61,12 @@ define("store", ["require", "exports"], function (require, exports) {
                     if (mode === "del" && cardItemObj.id !== endId) {
                         if (list.cardList[i].id === cardItemObj.id) {
                             list.cardList.splice(i, 1);
-                            // console.log("del -", list.cardList);
                             break;
                         }
                     }
                     if (mode === "add" && cardItemObj.id !== endId) {
                         if (list.cardList[i].id === endId) {
                             list.cardList.splice(i + 1, 0, cardItemObj);
-                            // console.log("add -", list.cardList);
                             break;
                         }
                     }
@@ -471,7 +468,6 @@ define("index", ["require", "exports", "components/Board"], function (require, e
         console.log("DOMContentLoaded!");
         var workRoot = document.getElementById("workRoot");
         var testWork = new Board_1.default(workRoot, "TEST-WORK");
-        // console.log("workRoot: ", workRoot);
     }));
 });
 //# sourceMappingURL=index.js.map

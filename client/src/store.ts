@@ -45,7 +45,6 @@ export function requestEvent(data: {}) {
 }
 
 export function updateStoreMap(cardItem: string, mode: string, endId:number, listId:number) {
-    console.log("getUpdateStoreMap ", store.data, cardItem, mode, endId, listId);
     const cardItemObj = JSON.parse(cardItem);
     store.data.forEach((list, index) => {
         if (list.cardList) {
@@ -53,14 +52,12 @@ export function updateStoreMap(cardItem: string, mode: string, endId:number, lis
                 if (mode === "del" && cardItemObj.id !== endId) {
                     if (list.cardList[i].id === cardItemObj.id) {
                         list.cardList.splice(i, 1);
-                        // console.log("del -", list.cardList);
                         break;
                     }
                 }
                 if (mode === "add" && cardItemObj.id !== endId) {
                     if (list.cardList[i].id === endId) {
                         list.cardList.splice(i + 1, 0, cardItemObj);
-                        // console.log("add -", list.cardList);
                         break;
                     }
                 }

@@ -15,12 +15,6 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.get('/events', eventsHandler);
 app.post('/add', addEvent);
 
-/*let count = 0;
-setInterval(() => {
-    addEvent(count);
-    count++;
-}, 1000);*/
-
 app.listen(PORT, () => {
     console.log(`server is running on http://localhost:${PORT}`)
 });

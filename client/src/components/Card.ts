@@ -1,5 +1,5 @@
 import DOM from "../utils/DOM";
-import {requestEvent, store, updateStoreMap} from "../store";
+import {updateStoreMap} from "../store";
 import {getRandomInt} from "../utils/index";
 
 export default class Card {
